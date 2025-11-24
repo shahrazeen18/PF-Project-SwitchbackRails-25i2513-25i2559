@@ -1,0 +1,70 @@
+NAME:
+Complex Interconnected Railway Network - 10 Trains
+
+ROWS:
+30
+
+COLS:
+70
+
+SEED:
+77777
+
+WEATHER:
+NORMAL
+
+MAP:
+                                                                      
+                                                                      
+  S===A===+===B===+===C===+=======D                                   
+          |       |       |       |                                   
+          |       |       |       |                                   
+  S===E===+===F===+===G===+===H===D                                   
+          |       |       |       |                                   
+          |       |       |       |                                   
+  S===I===+===J===+===K===+===L===D                                   
+          |       |       |       |                                   
+          |       |       |       |                                   
+  S===M===+===N===+===O===+===P===D                                   
+          |       |       |       |                                   
+          |       |       |       |                                   
+  S===Q===+===R===+===S===+===T===D                                   
+          |       |       |       |                                   
+          |       |       |       |                                   
+          D       D       D       D                                   
+                                                                                                                                       
+                                                                      
+
+SWITCHES:
+A PER_DIR 0 3 3 3 3 STRAIGHT TURN
+B PER_DIR 0 3 3 3 3 STRAIGHT TURN
+C PER_DIR 0 3 3 3 3 STRAIGHT TURN
+D PER_DIR 0 3 3 3 3 STRAIGHT TURN
+E PER_DIR 0 3 3 3 3 STRAIGHT TURN
+F PER_DIR 0 3 3 3 3 STRAIGHT TURN
+G PER_DIR 0 3 3 3 3 STRAIGHT TURN
+H PER_DIR 0 3 3 3 3 STRAIGHT TURN
+I PER_DIR 0 3 3 3 3 STRAIGHT TURN
+J PER_DIR 0 3 3 3 3 STRAIGHT TURN
+K PER_DIR 0 3 3 3 3 STRAIGHT TURN
+L PER_DIR 0 3 3 3 3 STRAIGHT TURN
+M PER_DIR 0 3 3 3 3 STRAIGHT TURN
+N PER_DIR 0 3 3 3 3 STRAIGHT TURN
+O PER_DIR 0 3 3 3 3 STRAIGHT TURN
+P PER_DIR 0 3 3 3 3 STRAIGHT TURN
+Q PER_DIR 0 3 3 3 3 STRAIGHT TURN
+R PER_DIR 0 3 3 3 3 STRAIGHT TURN
+S GLOBAL 0 4 4 4 4 STRAIGHT TURN
+T PER_DIR 0 3 3 3 3 STRAIGHT TURN
+
+TRAINS:
+0 2 2 1 0
+4 2 5 1 1
+8 2 8 1 2
+12 2 11 1 3
+16 2 14 1 4
+20 2 2 1 5
+24 2 5 1 6
+28 2 8 1 7
+32 2 11 1 8
+36 2 14 1 9

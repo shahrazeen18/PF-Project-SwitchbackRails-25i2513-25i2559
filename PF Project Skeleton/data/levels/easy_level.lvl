@@ -1,0 +1,33 @@
+NAME:
+Easy Level - Simple Railway
+
+ROWS:
+15
+
+COLS:
+40
+
+SEED:
+12345
+
+WEATHER:
+NORMAL
+
+MAP:
+                                        
+  S=====A=====D                         
+          |                              
+          |                              
+  S=====B=====D                          
+          |                              
+          |                              
+          D                              
+
+SWITCHES:
+A PER_DIR 0 2 2 2 2 STRAIGHT TURN
+B PER_DIR 0 2 2 2 2 STRAIGHT TURN
+
+TRAINS:
+0 2 2 1 0
+5 2 5 1 1
+
