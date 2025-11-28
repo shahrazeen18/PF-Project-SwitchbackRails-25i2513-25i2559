@@ -11,6 +11,7 @@
 int LevelNumRows = 0;
 int LevelNumCols = 0;
 int TheGrid[MAX_ROWS][MAX_COLS];
+char TheGrid[MAX_ROWS][MAX_COLS];
 
 // ----------------------------------------------------------------------------
 // TRAINS
