@@ -22,6 +22,16 @@ int TrainStartRow[MAX_TRAINS];
 int TrainStartDir[MAX_TRAINS];
 int TrainColorCode[MAX_TRAINS];
 bool TrainIsActive[MAX_TRAINS];
+int TrainCurrentCol[MAX_TRAINS];
+int TrainCurrentRow[MAX_TRAINS];
+int TrainCurrentDir[MAX_TRAINS];
+int TrainNextCol[MAX_TRAINS];
+int TrainNextRow[MAX_TRAINS];
+int TrainNextDir[MAX_TRAINS];
+int TrainState[MAX_TRAINS];
+int TrainState[MAX_TRAINS];
+
+
 
 // ----------------------------------------------------------------------------
 // SWITCHES

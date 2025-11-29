@@ -18,22 +18,54 @@
 // Activate trains scheduled for this tick.
 // ----------------------------------------------------------------------------
 void spawnTrainsForTick() {
+    for (int i = 0; i < TotalScheduledTrains ; i++) // check if train is scheduled for now.
+
+    {
+        if (TrainSpawnTicks[i] == CurrentTick) { //if the current tick is spawn tick then spawn it
+            
+            int r = TrainStartRow[i];
+            int c = TrainStartCol[i];
+            
+        
+        bool occupied = false;
+           
+                for (int j = 0; j < TotalScheduledTrains; j++) {
+                if (i == j) continue; // Don't check if self
+                if (TrainIsActive[j] && TrainStartRow[j] == r && TrainStartCol[j] == c) {
+                    occupied = true;
+                    break;
+                }
+            }
+            
+            if (occupied) {
+                // If it is blocked, wait until next tick
+                TrainSpawnTicks[i]++; 
+            } else {
+                // spawn the train
+                TrainIsActive[i] = true;
+                // We assume the train is now active at (r,c)
+            }
+        }
+    }
 }
+
+        
+
 
 // ----------------------------------------------------------------------------
 // DETERMINE NEXT POSITION for a train
 // ----------------------------------------------------------------------------
 // Compute next position/direction from current tile and rules.
 // ----------------------------------------------------------------------------
-bool determineNextPosition() {
+bool determineNextPosition() { return false;
 }
 
 // ----------------------------------------------------------------------------
-// GET NEXT DIRECTION based on current tile and direction
+// GET N+EXT DIRECTION based on current tile and direction
 // ----------------------------------------------------------------------------
 // Return new direction after entering the tile.
 // ----------------------------------------------------------------------------
-int getNextDirection() {
+int getNextDirection() { return 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -41,7 +73,7 @@ int getNextDirection() {
 // ----------------------------------------------------------------------------
 // Choose best direction at '+' toward destination.
 // ----------------------------------------------------------------------------
-int getSmartDirectionAtCrossing() {
+int getSmartDirectionAtCrossing() { return 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -58,6 +90,7 @@ void determineAllRoutes() {
 // Move trains; resolve collisions and apply effects.
 // ----------------------------------------------------------------------------
 void moveAllTrains() {
+    
 }
 
 // ----------------------------------------------------------------------------

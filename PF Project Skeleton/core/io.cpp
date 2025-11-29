@@ -121,7 +121,7 @@ bool loadLevelFile(const char* filename) {
                 file >> TrainStartDir[TotalScheduledTrains];
                 file >> TrainColorCode[TotalScheduledTrains];
 
-                TrainIsActive[TotalScheduledTrains] = true;
+                TrainIsActive[TotalScheduledTrains] = false;
                 TotalScheduledTrains++;
             }
         }

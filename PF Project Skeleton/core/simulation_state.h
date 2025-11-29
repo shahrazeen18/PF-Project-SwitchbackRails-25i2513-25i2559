@@ -42,6 +42,13 @@ extern int TrainStartRow[MAX_TRAINS];
 extern int TrainStartDir[MAX_TRAINS];    
 extern int TrainColorCode[MAX_TRAINS];   
 extern bool TrainIsActive[MAX_TRAINS];   
+extern int TrainCurrentCol[MAX_TRAINS];
+extern int TrainCurrentRow[MAX_TRAINS];
+extern int TrainCurrentDir[MAX_TRAINS];
+extern int TrainNextCol[MAX_TRAINS];
+extern int TrainNextRow[MAX_TRAINS];
+extern int TrainNextDir[MAX_TRAINS];
+extern int TrainState[MAX_TRAINS]; // 0 for scheduled 1 for active 2 for arrived 3 for crashed
 
 // ----------------------------------------------------------------------------
 // SWITCH CONSTANTS
