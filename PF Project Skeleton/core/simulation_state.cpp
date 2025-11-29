@@ -62,7 +62,7 @@ void initializeSimulationState() {
     GameSeed = 0;
     GameWeather = 0;
     
-    // Clear Map
+    // Clears the Map
   for (int i = 0; i < MAX_SWITCHES; i++) {
         SwitchExists[i] = false;
         SwitchCurrentState[i] = 0;
