@@ -11,7 +11,7 @@
 bool isInBounds( int r , int c);//gives if the row and column are inside map
 
 // Check if a tile is a track (can trains move on it?)
-bool isTrackTile( char tile );//tells us if the tile allows movement
+bool isTrackTile( int r, int c );//tells us if the tile allows movement
 
 // Check if a tile is a switch (A-Z)
 bool isSwitchTile( int r , int c);//tells if the current tile is a switch

@@ -10,7 +10,6 @@
 // ----------------------------------------------------------------------------
 int LevelNumRows = 0;
 int LevelNumCols = 0;
-int TheGrid[MAX_ROWS][MAX_COLS];
 char TheGrid[MAX_ROWS][MAX_COLS];
 
 // ----------------------------------------------------------------------------
@@ -63,7 +62,7 @@ void initializeSimulationState() {
     GameSeed = 0;
     GameWeather = 0;
     
-    // Clear Map
+    // Clears the Map
   for (int i = 0; i < MAX_SWITCHES; i++) {
         SwitchExists[i] = false;
         SwitchCurrentState[i] = 0;
