@@ -39,6 +39,7 @@ int SwitchFlipThresholds[MAX_SWITCHES][4];
 // ----------------------------------------------------------------------------
 int GameSeed = 0;
 int GameWeather = 0;
+int CurrentTick = 0;
 // ----------------------------------------------------------------------------
 // METRICS
 // ----------------------------------------------------------------------------
@@ -60,7 +61,8 @@ void initializeSimulationState() {
     LevelNumCols = 0;
     TotalScheduledTrains = 0;
     GameSeed = 0;
-    GameWeather = 0;
+    GameWeather = WEATHER_NORMAL;
+    CurrentTick = 0;
     
     // Clears the Map
   for (int i = 0; i < MAX_SWITCHES; i++) {

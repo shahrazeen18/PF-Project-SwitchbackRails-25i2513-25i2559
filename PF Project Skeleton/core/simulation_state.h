@@ -6,8 +6,8 @@
 // ============================================================================
 // Global constants and arrays used by the game.
 // ============================================================================
-#define MAX_ROWS 30
-#define MAX_COLS 60
+#define MAX_ROWS 100
+#define MAX_COLS 100
 #define MAX_TRAINS 100
 #define MAX_SWITCHES 26
 
@@ -55,7 +55,8 @@ extern int SwitchFlipThresholds[MAX_SWITCHES][4];
 // WEATHER CONSTANTS
 // ----------------------------------------------------------------------------
 extern int GameSeed;      
-extern int GameWeather;    
+extern int GameWeather;
+extern int CurrentTick;    
 
 // ----------------------------------------------------------------------------
 // SIGNAL CONSTANTS
