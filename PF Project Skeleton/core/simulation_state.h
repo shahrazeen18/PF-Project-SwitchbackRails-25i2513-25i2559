@@ -55,8 +55,10 @@ extern int TrainState[MAX_TRAINS]; // 0 for scheduled 1 for active 2 for arrived
 // ----------------------------------------------------------------------------
 extern bool SwitchExists[MAX_SWITCHES];       
 extern int SwitchCurrentState[MAX_SWITCHES];  //(0 or 1)
-extern int SwitchlogicMode[MAX_SWITCHES];    //(0=PerDir, 1=Global)
+extern int SwitchLogicMode[MAX_SWITCHES];    //(0=PerDir, 1=Global)
 extern int SwitchFlipThresholds[MAX_SWITCHES][4]; 
+extern int SwitchCounters[MAX_SWITCHES][4];
+extern bool SwitchFlipQueue[MAX_SWITCHES];
 
 // ----------------------------------------------------------------------------
 // WEATHER CONSTANTS

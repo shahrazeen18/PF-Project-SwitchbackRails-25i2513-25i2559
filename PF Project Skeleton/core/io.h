@@ -21,7 +21,7 @@ void initializeLogFiles();
 void logTrainTrace(int tick, int trainId, int x, int y, int dir, const char *state);
 
 // Append switch state to switches.csv.
-void logSwitchState(int tick, int switchId, const char *mode, int state);
+void logSwitchState(int tick, char switchId, const char *mode, int state);
 
 // Append signal state to signals.csv.
 void logSignalState(int tick, char switchId, const char *color);

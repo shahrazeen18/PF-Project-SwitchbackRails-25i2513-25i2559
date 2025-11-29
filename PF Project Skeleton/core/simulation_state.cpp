@@ -29,7 +29,7 @@ int TrainNextCol[MAX_TRAINS];
 int TrainNextRow[MAX_TRAINS];
 int TrainNextDir[MAX_TRAINS];
 int TrainState[MAX_TRAINS];
-int TrainState[MAX_TRAINS];
+
 
 
 
@@ -38,8 +38,10 @@ int TrainState[MAX_TRAINS];
 // ----------------------------------------------------------------------------
 bool SwitchExists[MAX_SWITCHES];
 int SwitchCurrentState[MAX_SWITCHES];
-int SwitchlogicMode[MAX_SWITCHES];
+int SwitchLogicMode[MAX_SWITCHES];
 int SwitchFlipThresholds[MAX_SWITCHES][4];
+int SwitchCounters[MAX_SWITCHES][4];
+bool SwitchFlipQueue[MAX_SWITCHES];
 // ----------------------------------------------------------------------------
 // SPAWN AND DESTINATION POINTS
 // ----------------------------------------------------------------------------
@@ -78,7 +80,7 @@ void initializeSimulationState() {
   for (int i = 0; i < MAX_SWITCHES; i++) {
         SwitchExists[i] = false;
         SwitchCurrentState[i] = 0;
-        SwitchlogicMode[i] = 0;
+        SwitchLogicMode[i] = 0;
         for (int k = 0; k < 4; k++) {
             SwitchFlipThresholds[i][k] = 0;
         }

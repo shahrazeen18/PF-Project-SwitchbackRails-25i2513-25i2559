@@ -128,12 +128,14 @@ void runApp() {
                     int r = (int)(worldPos.y / g_cellSize);
 
                     // Performs Action
+                   if(r >=0 && r < LevelNumRows && c >= 0 && c < LevelNumCols)  {
                     if (event.mouseButton.button == sf::Mouse::Left) {
                         toggleSafetyTile(r, c); // Uses r and c
                     } 
                     else if (event.mouseButton.button == sf::Mouse::Right) {
                         toggleSwitchState(); // Changes switches
-                    }
+                    } 
+                }
             }
         }
             // Mouse Button Released
@@ -232,6 +234,28 @@ void runApp() {
                         (*g_window).draw(text);
                     }
                 }
+            }
+        }
+        for (int i = 0; i < TotalScheduledTrains; i++) {
+            // Only draws Active trains (State == 1)
+            if (TrainState[i] == 1) {
+                int r = TrainCurrentRow[i];
+                int c = TrainCurrentCol[i];
+                
+                float x = c * g_cellSize;
+                float y = r * g_cellSize;
+
+                sf::CircleShape trainShape(g_cellSize * 0.4f);
+                trainShape.setPosition(x + g_cellSize * 0.1f, y + g_cellSize * 0.1f);
+                
+                // Color based on config
+                int colorCode = TrainColorCode[i];
+                if (colorCode == 0) trainShape.setFillColor(sf::Color::Red);
+                else if (colorCode == 1) trainShape.setFillColor(sf::Color::Green);
+                else if (colorCode == 2) trainShape.setFillColor(sf::Color::Blue);
+                else trainShape.setFillColor(sf::Color::White);
+
+                (*g_window).draw(trainShape);
             }
         }
 

@@ -95,9 +95,9 @@ bool loadLevelFile(const char* filename) {
                 file >> modeStr;
                 
                 if (strcmp(modeStr, "GLOBAL") == 0) 
-                    SwitchlogicMode[idx] = MODE_GLOBAL;
+                    SwitchLogicMode[idx] = MODE_GLOBAL;
                 else 
-                    SwitchlogicMode[idx] = MODE_PER_DIR;
+                    SwitchLogicMode[idx] = MODE_PER_DIR;
 
                 file >> SwitchCurrentState[idx];
 
@@ -225,7 +225,7 @@ void printGrid() {
 
         bool trainHere = false;
         for(int i = 0; i < TotalScheduledTrains; i++) {
-            if(TrainIsActive[i] && TrainStartRow[i] == r && TrainStartCol[i] == c) {
+            if(TrainState[i] == 1 && TrainCurrentRow[i] == r && TrainCurrentCol[i] == c) {
                 printf("%d", i % 10);
                 trainHere = true;
                 break;
