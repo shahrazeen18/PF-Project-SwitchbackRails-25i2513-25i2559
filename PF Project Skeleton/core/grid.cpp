@@ -11,7 +11,7 @@
 // Returns true if x,y are within bounds.
 // ----------------------------------------------------------------------------
 bool isInBounds( int x , int y ) {
-    return x >= 0 && x<MAX_ROWS && y>=0 && y<MAX_COLS ;
+    return x >= 0 && x< LevelNumRows && y>=0 && y< LevelNumCols ;
 }
 
 // ----------------------------------------------------------------------------
@@ -19,32 +19,24 @@ bool isInBounds( int x , int y ) {
 // ----------------------------------------------------------------------------
 // Returns true if the tile can be traversed by trains.
 // ----------------------------------------------------------------------------
-bool isTrackTile(char tile) {
-  
-    if ( tile == '-' || tile == '|' || tile == '/' || tile == '\\' || tile == '+') {
-        return true;
-    }
+bool isTrackTile( int r, int c ) {
+    // 1. Safety Check
+    if (!isInBounds(r, c)) return false;
+    
+    // 2. Get the character
+    char tile = TheGrid[r][c];
 
-    if (tile == '_' || tile == 'S' || tile == 'D') {
-        return true;
-    }
-
-    // Colored tracks: R=Red, Y=Yellow, G=Green, B=Blue, F=Foggy
-    if (tile == 'R' || tile == 'Y' || tile == 'G' || tile == 'B' || tile == 'F') {
-        return true;
-    }
-
-    // Numbered spawns/destinations
-    if (tile >= '1' && tile <= '9') {
-        return true;
-    }
-
-    if (tile >= 'A' && tile <= 'Z') {
-        return true; // Switch
-    }
-
+    // 3. Logic Check
+    // Standard tracks
+    if (tile == '-' || tile == '|' || tile == '/' || tile == '\\' || tile == '+') return true;
+    
+    // Stations and Safety
+    if (tile == 'S' || tile == 'D' || tile == '=') return true;
+    
+    // Switches (A-Z)
+    if (tile >= 'A' && tile <= 'Z') return true;
+    
     return false;
-
 }
 
 // ----------------------------------------------------------------------------

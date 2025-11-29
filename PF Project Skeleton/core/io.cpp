@@ -22,6 +22,7 @@ bool loadLevelFile(const char* filename) {
     // 2. Open File
     ifstream file(filename);
     if (!file.is_open()) {   //If Error
+        printf("Error: Not opening");
         return false;
     }
 
@@ -135,6 +136,24 @@ bool loadLevelFile(const char* filename) {
 // Create/clear CSV logs with headers.
 // ----------------------------------------------------------------------------
 void initializeLogFiles() {
+       // Open files in "w" (write) mode to clear them
+    FILE* fTrace = fopen("out/trace.csv", "w");
+    if (fTrace) {
+        fprintf(fTrace, "Tick,TrainID,X,Y,Direction,State\n");
+        fclose(fTrace);
+    }
+
+    FILE* fSwitches = fopen("out/switches.csv", "w");
+    if (fSwitches) {
+        fprintf(fSwitches, "Tick,Switch,Mode,State\n");
+        fclose(fSwitches);
+    }
+
+    FILE* fSignals = fopen("out/signals.csv", "w");
+    if (fSignals) {
+        fprintf(fSignals, "Tick,Switch,Signal\n");
+        fclose(fSignals);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -142,7 +161,18 @@ void initializeLogFiles() {
 // ----------------------------------------------------------------------------
 // Append tick, train id, position, direction, state to trace.csv.
 // ----------------------------------------------------------------------------
-void logTrainTrace() {
+void logTrainTrace(int tick, int trainId, int x, int y, int dir, const char *state) {
+    FILE* f = fopen("out/trace.csv", "a"); // "a" = append
+    if (f) {
+        // Direction names for readability (Optional)
+        const char* dirName = "UP";
+        if (dir == 1) dirName = "RIGHT";
+        else if (dir == 2) dirName = "DOWN";
+        else if (dir == 3) dirName = "LEFT";
+
+        fprintf(f, "%d,%d,%d,%d,%s,%s\n", tick, trainId, x, y, dirName, state);
+        fclose(f);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -150,21 +180,62 @@ void logTrainTrace() {
 // ----------------------------------------------------------------------------
 // Append tick, switch id/mode/state to switches.csv.
 // ----------------------------------------------------------------------------
-void logSwitchState() {
+void logSwitchState(int tick, char switchId, const char *mode, int state) {
+    FILE* f = fopen("out/switches.csv", "a");
+    if (f) {
+        // State: 0 = Straight (usually), 1 = Turn
+        const char* stateStr = (state == 0) ? "Straight" : "Turn";
+        fprintf(f, "%d,%c,%s,%s\n", tick, switchId, mode, stateStr);
+        fclose(f);
+    }
 }
-
 // ----------------------------------------------------------------------------
 // LOG SIGNAL STATE
 // ----------------------------------------------------------------------------
 // Append tick, switch id, signal color to signals.csv.
 // ----------------------------------------------------------------------------
-void logSignalState() {
+void logSignalState(int tick, char switchId, const char *color) {
+    FILE* f = fopen("out/signals.csv", "a");
+    if (f) {
+        fprintf(f, "%d,%c,%s\n", tick, switchId, color);
+        fclose(f);
+    }
 }
-
 // ----------------------------------------------------------------------------
 // WRITE FINAL METRICS
 // ----------------------------------------------------------------------------
 // Write summary metrics to metrics.txt.
 // ----------------------------------------------------------------------------
 void writeMetrics() {
+    FILE* f = fopen("out/metrics.txt", "w");
+    if (f) {
+        fprintf(f, "SIMULATION METRICS\n");
+        fprintf(f, "==================\n");
+        fprintf(f, "Total Trains Scheduled: %d\n", TotalScheduledTrains);
+        // You can add more global counters here later (like TotalCrashes)
+        fprintf(f, "Simulation Ended.\n");
+        fclose(f);
+    }
+}
+
+void printGrid() {
+   
+   for(int r = 0; r < LevelNumRows; r++) {
+     for(int c = 0; c < LevelNumCols; c++) {
+
+        bool trainHere = false;
+        for(int i = 0; i < TotalScheduledTrains; i++) {
+            if(TrainIsActive[i] && TrainStartRow[i] == r && TrainStartCol[i] == c) {
+                printf("%d", i % 10);
+                trainHere = true;
+                break;
+            }
+        }
+        if(!trainHere) {
+            printf("%c", TheGrid[r][c]);
+        }
+     }
+      printf("\n");
+    }
+   printf("--------------------------\n");
 }
