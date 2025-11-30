@@ -5,7 +5,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
-using namespace std;
+
 // ============================================================================
 // IO.CPP - Level I/O and logging
 // ============================================================================
@@ -20,53 +20,61 @@ bool loadLevelFile(const char* filename) {
     initializeSimulationState();
 
     // 2. Open File
-    ifstream file(filename);
-    if (!file.is_open()) {   //If Error
+    FILE* file = fopen(filename, "r");
+    if (!file) {   //If Error
         printf("Error: Not opening");
         return false;
     }
 
     char key[64];       // Buffer for single words
-    char line[256];     // Buffer for full lines
     int mode = 0;       // 0=Header, 1=Switches, 2=Trains
 
     // 3. Read Word by Word
-    while (file >> key) {
+    while (fscanf(file, "%s", key) == 1) {
 
         // KEYWORD DETECTION 
         
         if (strcmp(key, "NAME:") == 0) {
-            file.getline(line, 256); // Read rest of line
+            char c;
+            while ((c = fgetc(file)) != '\n' && c != EOF);            
             continue;
         }
-        if (strcmp(key, "ROWS:") == 0) {
-            file >> LevelNumRows;
-            continue;
+    if (strcmp(key, "ROWS:") == 0) { 
+    fscanf(file, "%d", &LevelNumRows); 
+    continue; }
+    if (strcmp(key, "COLS:") == 0) { 
+    fscanf(file, "%d", &LevelNumCols); 
+    continue; }
+    if (strcmp(key, "SEED:") == 0) {
+        fscanf(file, "%d", &GameSeed);
+        srand(GameSeed); continue; }
+    if (strcmp(key, "WEATHER:") == 0) {
+        char w[32]; 
+        fscanf(file, "%s", w);
+    if (strcmp(w, "RAIN") == 0) 
+    GameWeather = WEATHER_RAIN;
+    else if(strcmp(w, "FOG") == 0)
+    GameWeather = WEATHER_FOG;
+    else 
+    GameWeather = WEATHER_NORMAL;
+    continue;
         }
-        if (strcmp(key, "COLS:") == 0) {
-            file >> LevelNumCols;
-            continue;
-        }
-        if (strcmp(key, "SEED:") == 0) {
-            file >> GameSeed;
-            srand(GameSeed);  // Seed RNG
-            continue;
-        }
-        if (strcmp(key, "WEATHER:") == 0) {
-            char w[32];
-            file >> w;
-            if (strcmp(w, "RAIN") == 0) GameWeather = WEATHER_RAIN;
-            else if (strcmp(w, "FOG") == 0) GameWeather = WEATHER_FOG;
-            else GameWeather = WEATHER_NORMAL;
-            continue;
-        }
-        if (strcmp(key, "MAP:") == 0) {
-            file.getline(line, 256); //newline after "MAP:"
+    if (strcmp(key, "MAP:") == 0) {
+            fgetc(file); // consumes newline
             for (int r = 0; r < LevelNumRows; r++) {
-                //Reading row into char buffer
-                file.getline(line, 256);
-                for (int c = 0; c < LevelNumCols; c++) {
-                    TheGrid[r][c] = line[c];
+                int c = 0;
+                char ch;
+        while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                    // Only stores valid visible characters (avoids \r)
+                    if (c < LevelNumCols && ch >= 32 && ch <= 126) {
+                        TheGrid[r][c] = ch;
+                        c++;
+                    }
+                }
+                // Fills remaining columns with empty space if line was short
+                while (c < LevelNumCols) {
+                    TheGrid[r][c] = ' ';
+                    c++;
                 }
             }
             continue;
@@ -92,42 +100,42 @@ bool loadLevelFile(const char* filename) {
                 SwitchExists[idx] = true;
 
                 char modeStr[32];
-                file >> modeStr;
+                fscanf(file, "%s", modeStr);
                 
                 if (strcmp(modeStr, "GLOBAL") == 0) 
                     SwitchLogicMode[idx] = MODE_GLOBAL;
                 else 
                     SwitchLogicMode[idx] = MODE_PER_DIR;
 
-                file >> SwitchCurrentState[idx];
+                fscanf(file, "%d", &SwitchCurrentState[idx]);
 
                 // Reading 4 K-values
-                file >> SwitchFlipThresholds[idx][0];
-                file >> SwitchFlipThresholds[idx][1];
-                file >> SwitchFlipThresholds[idx][2];
-                file >> SwitchFlipThresholds[idx][3];
+                   for(int k=0; k<4; k++) {
+                    fscanf(file, "%d", &SwitchFlipThresholds[idx][k]);
+                }
 
-                file.getline(line, 256); // Skipping "LEFT RIGHT" labels
+                // Skip the labels at the end of the line (e.g. "LEFT RIGHT")
+                char c;
+                while ((c = fgetc(file)) != '\n' && c != EOF);
             }
         }
-        // Parsing Train
         else if (mode == 2) {
+            // 'key' is the Spawn Tick
             if (TotalScheduledTrains < MAX_TRAINS) {
-                // key is the tick count (string), converting to int
                 TrainSpawnTicks[TotalScheduledTrains] = atoi(key);
-
-                file >> TrainStartCol[TotalScheduledTrains];
-                file >> TrainStartRow[TotalScheduledTrains];
-                file >> TrainStartDir[TotalScheduledTrains];
-                file >> TrainColorCode[TotalScheduledTrains];
-
-                TrainIsActive[TotalScheduledTrains] = false;
+                
+                fscanf(file, "%d %d %d %d", 
+                    &TrainStartCol[TotalScheduledTrains], 
+                    &TrainStartRow[TotalScheduledTrains],
+                    &TrainStartDir[TotalScheduledTrains], 
+                    &TrainColorCode[TotalScheduledTrains]);
+        TrainIsActive[TotalScheduledTrains] = false;
                 TotalScheduledTrains++;
             }
         }
     }
 
-    file.close();
+    fclose(file);
     return true;
 }
 // ----------------------------------------------------------------------------
@@ -219,7 +227,7 @@ void writeMetrics() {
 }
 
 void printGrid() {
-   
+   printf("Tick: %d\n", CurrentTick);
    for(int r = 0; r < LevelNumRows; r++) {
      for(int c = 0; c < LevelNumCols; c++) {
 
