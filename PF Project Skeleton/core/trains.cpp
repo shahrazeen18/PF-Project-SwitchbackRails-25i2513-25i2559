@@ -4,6 +4,16 @@
 #include "switches.h"
 #include <cstdlib>
 
+
+void getDelta(int dir, int &dr, int &dc) {
+    dr = 0; dc = 0;
+    if (dir == DIR_UP) dr = -1;
+    else if (dir == DIR_RIGHT) dc = 1;
+    else if (dir == DIR_DOWN) dr = 1;
+    else if (dir == DIR_LEFT) dc = -1;
+}
+
+
 // ============================================================================
 // TRAINS.CPP - Train logic
 // ============================================================================
@@ -124,25 +134,19 @@ int getNextDirection(int r, int c, int dir, char tile) {
             return dir ;
         }
         else{
+            
             int rightDir = (dir + 1) % 4;
-            int dr = 0, dc = 0;
-            if (rightDir == DIR_UP) dr = -1; 
-            else if (rightDir == DIR_RIGHT) dc = 1;
-            else if (rightDir == DIR_DOWN) dr = 1;
-            else if (rightDir == DIR_LEFT) dc = -1;
+            int dr, dc;
+            getDelta(rightDir, dr, dc);
+            
             if (isTrackTile(r + dr, c + dc)) {
                 return rightDir;
             }
             int leftDir = (dir + 3) % 4;
-            dr = 0; dc = 0;
-            if (leftDir == DIR_UP) dr = -1; 
-            else if (leftDir == DIR_RIGHT) dc = 1;
-            else if (leftDir == DIR_DOWN) dr = 1;
-            else if (leftDir == DIR_LEFT) dc = -1;
-            
-            if (isTrackTile(r + dr, c + dc)) {
-                return leftDir;
-            }
+            getDelta(leftDir, dr, dc);
+            if(isTrackTile(r + dr, c + dc)) {
+            return leftDir;
+        }
             return dir;
         }
 
@@ -188,12 +192,14 @@ int getSmartDirectionAtCrossing(int r, int c, int currentDir) {
 
     for(int k=0; k<3; k++) {
         int d = candidates[k];
-        int dr = 0, dc = 0;
-        if (d==DIR_UP) dr=-1;
-        else if (d==DIR_RIGHT) dc=1; 
-        else if (d==DIR_DOWN) dr=1; 
-        else if (d==DIR_LEFT) dc=-1;
-        
+        int dr, dc;
+        getDelta(d, dr, dc);
+
+    if(!isTrackTile(r +dr, c + dc)){
+        continue;
+    }
+
+
         // Manhattan Distance calculation
         int dist = abs(destR - (r + dr)) + abs(destC - (c + dc));
         

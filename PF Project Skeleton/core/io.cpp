@@ -39,46 +39,74 @@ bool loadLevelFile(const char* filename) {
             while ((c = fgetc(file)) != '\n' && c != EOF);            
             continue;
         }
-    if (strcmp(key, "ROWS:") == 0) { 
-    fscanf(file, "%d", &LevelNumRows); 
-    continue; }
-    if (strcmp(key, "COLS:") == 0) { 
-    fscanf(file, "%d", &LevelNumCols); 
-    continue; }
-    if (strcmp(key, "SEED:") == 0) {
-        fscanf(file, "%d", &GameSeed);
-        srand(GameSeed); continue; }
-    if (strcmp(key, "WEATHER:") == 0) {
-        char w[32]; 
-        fscanf(file, "%s", w);
-    if (strcmp(w, "RAIN") == 0) 
-    GameWeather = WEATHER_RAIN;
-    else if(strcmp(w, "FOG") == 0)
-    GameWeather = WEATHER_FOG;
-    else 
-    GameWeather = WEATHER_NORMAL;
-    continue;
+        if (strcmp(key, "ROWS:") == 0) { 
+            fscanf(file, "%d", &LevelNumRows); 
+            continue; 
         }
-    if (strcmp(key, "MAP:") == 0) {
-            fgetc(file); // consumes newline
+        if (strcmp(key, "COLS:") == 0) { 
+            fscanf(file, "%d", &LevelNumCols); 
+            continue; 
+        }
+        if (strcmp(key, "SEED:") == 0) {
+            fscanf(file, "%d", &GameSeed);
+            srand(GameSeed); continue; 
+        }
+        if (strcmp(key, "WEATHER:") == 0) {
+            char w[32]; 
+            fscanf(file, "%s", w);
+            if (strcmp(w, "RAIN") == 0) 
+                GameWeather = WEATHER_RAIN;
+            else if(strcmp(w, "FOG") == 0)
+                GameWeather = WEATHER_FOG;
+            else 
+                GameWeather = WEATHER_NORMAL;
+            continue;
+        }
+        if (strcmp(key, "MAP:") == 0) {
+            // Consume the newline after "MAP:"
+            fgetc(file); 
+
             for (int r = 0; r < LevelNumRows; r++) {
-                int c = 0;
-                char ch;
-        while ((ch = fgetc(file)) != '\n' && ch != EOF) {
-                    // Only stores valid visible characters (avoids \r)
-                    if (c < LevelNumCols && ch >= 32 && ch <= 126) {
-                        TheGrid[r][c] = ch;
-                        c++;
-                    }
+                char buffer[256];
+                int idx = 0;
+                char c;
+                
+                // Read line manually
+                while ((c = fgetc(file)) != '\n' && c != EOF) {
+                    if (idx < 255) buffer[idx++] = c;
                 }
-                // Fills remaining columns with empty space if line was short
-                while (c < LevelNumCols) {
-                    TheGrid[r][c] = ' ';
-                    c++;
+                buffer[idx] = '\0';
+
+                // Check if this line is actually "SWITCHES:" or "TRAINS:"
+                // We check the first few letters manually.
+                bool isKeyword = false;
+                if (buffer[0] == 'S' && buffer[1] == 'W' && buffer[2] == 'I' && buffer[3] == 'T') isKeyword = true;
+                if (buffer[0] == 'T' && buffer[1] == 'R' && buffer[2] == 'A' && buffer[3] == 'I') isKeyword = true;
+            
+                if (isKeyword) {
+                    if (buffer[0] == 'S') mode = 1; // Switches
+                    else mode = 2; // Trains
+                    break; 
+                }
+
+                // If it's a valid map line, copy it to the grid
+                for (int col = 0; col < LevelNumCols; col++) {
+                    if (col < idx) {
+                        char ch = buffer[col];
+                        // Filter visible characters only
+                        if (ch >= 32 && ch <= 126) {
+                            TheGrid[r][col] = ch;
+                        } else {
+                            TheGrid[r][col] = ' ';
+                        }
+                    } else {
+                        TheGrid[r][col] = ' ';
+                    }
                 }
             }
             continue;
         }
+
         if (strcmp(key, "SWITCHES:") == 0) {
             mode = 1;
             continue;
@@ -93,44 +121,44 @@ bool loadLevelFile(const char* filename) {
         // Parse Switch
         if (mode == 1) {
             // key is the switch letter
-            char letter = key[0];
-            int idx = letter - 'A';
+            if( key[0] >= 'A' && key[0] <= 'Z' && key[1] == '\0') {
+                char letter = key[0];
+                int idx = letter - 'A';
 
-            if (idx >= 0 && idx < MAX_SWITCHES) {
-                SwitchExists[idx] = true;
+                if (idx >= 0 && idx < MAX_SWITCHES) {
+                    SwitchExists[idx] = true;
 
-                char modeStr[32];
-                fscanf(file, "%s", modeStr);
-                
-                if (strcmp(modeStr, "GLOBAL") == 0) 
-                    SwitchLogicMode[idx] = MODE_GLOBAL;
-                else 
-                    SwitchLogicMode[idx] = MODE_PER_DIR;
-
-                fscanf(file, "%d", &SwitchCurrentState[idx]);
-
-                // Reading 4 K-values
-                   for(int k=0; k<4; k++) {
-                    fscanf(file, "%d", &SwitchFlipThresholds[idx][k]);
+                    char modeStr[32];
+                    fscanf(file, "%s", modeStr);
+                    
+                    SwitchLogicMode[idx] = (strcmp(modeStr, "GLOBAL") == 0) ? MODE_GLOBAL : MODE_PER_DIR;
+                    fscanf(file, "%d", &SwitchCurrentState[idx]);
+                    
+                    for(int k=0; k<4; k++) {
+                        fscanf(file, "%d", &SwitchFlipThresholds[idx][k]);
+                    }
+                    
+                    char c;
+                    while ((c = fgetc(file)) != '\n' && c != EOF); 
                 }
-
-                // Skip the labels at the end of the line (e.g. "LEFT RIGHT")
-                char c;
-                while ((c = fgetc(file)) != '\n' && c != EOF);
             }
         }
         else if (mode == 2) {
             // 'key' is the Spawn Tick
             if (TotalScheduledTrains < MAX_TRAINS) {
-                TrainSpawnTicks[TotalScheduledTrains] = atoi(key);
-                
-                fscanf(file, "%d %d %d %d", 
-                    &TrainStartCol[TotalScheduledTrains], 
-                    &TrainStartRow[TotalScheduledTrains],
-                    &TrainStartDir[TotalScheduledTrains], 
-                    &TrainColorCode[TotalScheduledTrains]);
-        TrainIsActive[TotalScheduledTrains] = false;
-                TotalScheduledTrains++;
+                // Ensure key is a digit before converting
+                if (key[0] >= '0' && key[0] <= '9') {
+                    TrainSpawnTicks[TotalScheduledTrains] = atoi(key);
+                    
+                    fscanf(file, "%d %d %d %d", 
+                        &TrainStartCol[TotalScheduledTrains], 
+                        &TrainStartRow[TotalScheduledTrains],
+                        &TrainStartDir[TotalScheduledTrains], 
+                        &TrainColorCode[TotalScheduledTrains]);
+
+                    TrainIsActive[TotalScheduledTrains] = false;
+                    TotalScheduledTrains++;
+                }
             }
         }
     }
@@ -227,7 +255,7 @@ void writeMetrics() {
 }
 
 void printGrid() {
-   printf("Tick: %d\n", CurrentTick);
+   
    for(int r = 0; r < LevelNumRows; r++) {
      for(int c = 0; c < LevelNumCols; c++) {
 

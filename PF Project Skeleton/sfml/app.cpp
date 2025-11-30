@@ -54,7 +54,7 @@ bool initializeApp() {
     // Loads Font
     // Required for drawing text. If this fails, text won't show, but we return true to run.
     if (!g_font.loadFromFile("data/levels/arial.ttf")) {
-        // Font failed to load. Ensure arial.ttf is in data/levels directory.
+        // Font will show in simulation
     }
 
     // Setup Camera

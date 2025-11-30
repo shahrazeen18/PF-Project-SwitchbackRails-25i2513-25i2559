@@ -1,4 +1,0 @@
-SIMULATION METRICS
-==================
-Total Trains Scheduled: 0
-Simulation Ended.
