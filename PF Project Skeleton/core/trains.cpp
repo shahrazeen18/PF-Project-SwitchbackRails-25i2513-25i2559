@@ -8,6 +8,10 @@
 // TRAINS.CPP - Train logic
 // ============================================================================
 
+// Storage for planned moves (for collisions).
+
+// Previous positions (to detect switch entry).
+
 void getDelta(int dir, int &dr, int &dc) {
     dr = 0; dc = 0;
     if (dir == DIR_UP) dr = -1;
@@ -39,13 +43,15 @@ int calculateDistance(int trainIdx) {
 // Activate trains scheduled for this tick.
 // ----------------------------------------------------------------------------
 void spawnTrainsForTick() {
-    for (int i = 0; i < TotalScheduledTrains; i++) {
-        if (TrainSpawnTicks[i] <= CurrentTick && TrainState[i] == 0) {
+    for (int i = 0; i < TotalScheduledTrains ; i++) 
+    {
+        if (TrainSpawnTicks[i] <= CurrentTick && TrainState[i] == 0) { 
             
             int r = TrainStartRow[i];
             int c = TrainStartCol[i];
            
             bool blocked = false;
+           
             for (int j = 0; j < TotalScheduledTrains; j++) {
                 if (TrainState[j] == 1 && TrainCurrentRow[j] == r && TrainCurrentCol[j] == c) {
                     blocked = true;
@@ -54,14 +60,17 @@ void spawnTrainsForTick() {
             }
             
             if (blocked) {
+                // If it is blocked, wait until next tick
                 TrainSpawnTicks[i]++; 
             } else {
+                // spawn the train
                 TrainIsActive[i] = true;
                 TrainState[i] = 1;
                 TrainCurrentRow[i] = r;
                 TrainCurrentCol[i] = c;
                 TrainCurrentDir[i] = TrainStartDir[i];
                 
+                // Initialize Next to avoid glitches
                 TrainNextRow[i] = r;
                 TrainNextCol[i] = c;
                 TrainNextDir[i] = TrainStartDir[i];
@@ -79,47 +88,51 @@ bool determineNextPosition(int i) {
     int r = TrainCurrentRow[i];
     int c = TrainCurrentCol[i];
     int dir = TrainCurrentDir[i];
+    int dr , dc ;
+    getDelta(dir , dr , dc);
     
-    int dr, dc;
-    getDelta(dir, dr, dc);
-
     int nextR = r + dr;
     int nextC = c + dc;
     int nextDir = dir;
-
+    // Handles Crossing
     if (isInBounds(nextR, nextC)) {
         char tile = TheGrid[nextR][nextC];
         if (tile == '+') {
             nextDir = getSmartDirectionAtCrossing(nextR, nextC, dir);
         } else {
+            // Handles Curves and Switches
             nextDir = getNextDirection(nextR, nextC, dir, tile);
         }
     }
-    
+      // Stores planned move
     TrainNextRow[i] = nextR;
     TrainNextCol[i] = nextC;
     TrainNextDir[i] = nextDir;
+
     return true;
 }
 
 // ----------------------------------------------------------------------------
-// GET NEXT DIRECTION based on current tile and direction
+// GET N+EXT DIRECTION based on current tile and direction
 // ----------------------------------------------------------------------------
 // Return new direction after entering the tile.
 // ----------------------------------------------------------------------------
 int getNextDirection(int r, int c, int dir, char tile) { 
+     // Curve 
     if (tile == '/') {
-        if (dir == DIR_RIGHT) return DIR_UP;
-        if (dir == DIR_DOWN) return DIR_LEFT;
-        if (dir == DIR_LEFT) return DIR_DOWN;
-        if (dir == DIR_UP) return DIR_RIGHT;
+        if (dir == DIR_RIGHT) return DIR_UP; // Right -> Up
+        if (dir == DIR_DOWN) return DIR_LEFT; // Down -> Left
+        if (dir == DIR_LEFT) return DIR_DOWN; // Left -> Down
+        if (dir == DIR_UP) return DIR_RIGHT; // Up -> Right
     }
+    // Curve \ (backslash)
     else if (tile == '\\') {
-        if (dir == DIR_RIGHT) return DIR_DOWN;
-        if (dir == DIR_UP) return DIR_LEFT;
-        if (dir == DIR_LEFT) return DIR_UP;
-        if (dir == DIR_DOWN) return DIR_RIGHT;
+        if (dir == DIR_RIGHT) return DIR_DOWN; // Right -> Down
+        if (dir == DIR_UP) return DIR_LEFT; // Up -> Left
+        if (dir == DIR_LEFT) return DIR_UP; // Left -> Up
+        if (dir == DIR_DOWN) return DIR_RIGHT; // Down -> Right
     }
+    // Switches (A-Z)
     else if (tile >= 'A' && tile <= 'Z') {
         int idx = tile - 'A';
         int state = SwitchCurrentState[idx];
@@ -128,6 +141,7 @@ int getNextDirection(int r, int c, int dir, char tile) {
             return dir;
         }
         else {
+            // Try Right Turn
             int rightDir = (dir + 1) % 4;
             int dr, dc;
             getDelta(rightDir, dr, dc);
@@ -136,12 +150,12 @@ int getNextDirection(int r, int c, int dir, char tile) {
                 return rightDir;
             }
             
+            // Try Left Turn (fallback)
             int leftDir = (dir + 3) % 4;
             getDelta(leftDir, dr, dc);
-            if (isTrackTile(r + dr, c + dc)) {
+            if(isTrackTile(r + dr, c + dc)) {
                 return leftDir;
             }
-            
             return dir;
         }
     }
@@ -154,38 +168,46 @@ int getNextDirection(int r, int c, int dir, char tile) {
 // Choose best direction at '+' toward destination.
 // ----------------------------------------------------------------------------
 int getSmartDirectionAtCrossing(int r, int c, int currentDir) { 
-    int destR = -1, destC = -1;
-    int minDistFound = 99999;
-    
+     int destR = -1, destC = -1;
+     int minDistFound = 99999;
+   // Flag to break nested loops
+    // Simple search for any 'D'
     for(int i = 0; i < LevelNumRows; i++) {
         for(int j = 0; j < LevelNumCols; j++) {
             if(TheGrid[i][j] == 'D') {
                 int d = abs(i - r) + abs(j - c);
-                if (d < minDistFound) {
-                    minDistFound = d;
-                    destR = i; 
-                    destC = j; 
+                if (d < minDistFound) { 
+                    minDistFound = d; 
+                    destR=i; 
+                    destC=j; 
                 }
             }
         }
     }
-    if (destR == -1) return currentDir;
+    if (destR == -1)
+     return currentDir;
 
+    // Checks 3 directions: Straight, Left, Right
+    // 0=UP, 1=RIGHT, 2=DOWN, 3=LEFT
+    
     int bestDir = currentDir;
     int minDist = 99999;
 
+    // Candidates: Straight, Left Turn, Right Turn
     int candidates[3];
     candidates[0] = currentDir;
-    candidates[1] = (currentDir + 3) % 4; 
-    candidates[2] = (currentDir + 1) % 4; 
+    candidates[1] = (currentDir + 3) % 4; // Left
+    candidates[2] = (currentDir + 1) % 4; // Right
 
     for(int k=0; k<3; k++) {
         int d = candidates[k];
         int dr, dc;
         getDelta(d, dr, dc);
-        
-        if(!isTrackTile(r + dr, c + dc)) continue;
 
+        if(!isTrackTile(r + dr, c + dc))
+            continue;
+
+        // Manhattan Distance calculation
         int dist = abs(destR - (r + dr)) + abs(destC - (c + dc));
         
         if (dist < minDist) {
@@ -193,6 +215,7 @@ int getSmartDirectionAtCrossing(int r, int c, int currentDir) {
             bestDir = d;
         }
     }
+
     return bestDir;
 }
 
@@ -203,7 +226,7 @@ int getSmartDirectionAtCrossing(int r, int c, int currentDir) {
 // ----------------------------------------------------------------------------
 void determineAllRoutes() {
     for (int i = 0; i < TotalScheduledTrains; i++) {
-        if (TrainState[i] == 1) { 
+        if (TrainState[i] == 1) { // Active
             determineNextPosition(i);
         }
     }
@@ -221,6 +244,7 @@ void moveAllTrains() {
             TrainCurrentRow[i] = TrainNextRow[i];
             TrainCurrentCol[i] = TrainNextCol[i];
             TrainCurrentDir[i] = TrainNextDir[i];
+            // Switch counter update removed from here (handled in simulation.cpp)
         }
     }
 }
@@ -238,9 +262,8 @@ void detectCollisions() {
             if (TrainState[j] != 1) continue;
             
             bool collision = false;
-
             if (TrainNextRow[i] == TrainNextRow[j] && TrainNextCol[i] == TrainNextCol[j]) {
-                collision = true;
+               collision = true;
             }
             else if (TrainNextRow[i] == TrainCurrentRow[j] && TrainNextCol[i] == TrainCurrentCol[j] &&
                      TrainNextRow[j] == TrainCurrentRow[i] && TrainNextCol[j] == TrainCurrentCol[i]) {
@@ -249,7 +272,7 @@ void detectCollisions() {
 
             if (collision) {
                 int distI = calculateDistance(i);
-                int distJ = calculateDistance(j);
+                int distJ  = calculateDistance(j);
 
                 if (distI > distJ) {
                     TrainNextRow[j] = TrainCurrentRow[j];
@@ -279,11 +302,14 @@ void checkArrivals() {
             int r = TrainCurrentRow[i];
             int c = TrainCurrentCol[i];
 
+            // Checks Arrival
             if (TheGrid[r][c] == 'D') {
                 TrainState[i] = 2; // Arrived
                 TrainIsActive[i] = false;
             }
-            else if (!isInBounds(r, c) || !isTrackTile(r, c)) {
+            // Checks Crash 
+            else if (!isInBounds(r, c) || !isTrackTile(r , c) ) 
+            {
                 TrainState[i] = 3; // Crashed
                 TrainIsActive[i] = false;
             }

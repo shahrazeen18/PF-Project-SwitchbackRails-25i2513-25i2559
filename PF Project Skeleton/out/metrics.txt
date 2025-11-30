@@ -1,0 +1,4 @@
+SIMULATION METRICS
+==================
+Total Trains Scheduled: 8
+Simulation Ended.
