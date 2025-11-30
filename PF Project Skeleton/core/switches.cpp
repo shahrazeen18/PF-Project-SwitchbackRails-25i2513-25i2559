@@ -88,30 +88,26 @@ void queueSwitchFlips() {
 // ----------------------------------------------------------------------------
 void applyDeferredFlips() {
     for (int i = 0; i < MAX_SWITCHES; i++) {
+       for (int i = 0; i < MAX_SWITCHES; i++) {
         if (SwitchFlipQueue[i]) {
-         if (SwitchCurrentState[i] == 0) {
-                SwitchCurrentState[i] = 1;
-            } else {
-                SwitchCurrentState[i] = 0;
-            }
-            char switchName = 'A' + i;
+            SwitchCurrentState[i] = !SwitchCurrentState[i];
+            } char switchName = 'A' + i;
             const char* modeStr = (SwitchLogicMode[i] == MODE_GLOBAL) ? "GLOBAL" : "PER_DIR";
-
             logSwitchState(CurrentTick, switchName, modeStr, SwitchCurrentState[i]);
 
-             for (int k = 0; k < 4; k++) {
-                SwitchCounters[i][k] = 0;
-            }
-              SwitchFlipQueue[i] = false;
-}
-}
+            for (int k = 0; k < 4; k++)
+            SwitchCounters[i][k] = 0; // Reset
+            SwitchFlipQueue[i] = false;
+        }
+    }
 }
 // ----------------------------------------------------------------------------
 // UPDATE SIGNAL LIGHTS
 // ----------------------------------------------------------------------------
 // Update signal colors for switches.
 // ----------------------------------------------------------------------------
-void updateSignalLights() { for (int i = 0; i < MAX_SWITCHES; i++) {
+void updateSignalLights() { 
+    for (int i = 0; i < MAX_SWITCHES; i++) {
         if (!SwitchExists[i]) continue;
         
         // Default Signal is green

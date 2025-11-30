@@ -22,6 +22,25 @@ void getDelta(int dir, int &dr, int &dc) {
 
 // Previous positions (to detect switch entry).
 
+int calculateDistance(int trainIdx) {
+    int r = TrainCurrentRow[trainIdx];
+    int c = TrainCurrentCol[trainIdx];
+    int minDist = 99999;
+    bool found = false ;
+    for (int i = 0; i < LevelNumRows; i++) {
+        for (int j = 0; j < LevelNumCols; j++) {
+            if (TheGrid[i][j] == 'D') {
+               
+                int dist = abs(i - r) + abs(j - c);
+                if (dist < minDist) minDist = dist;
+                found = true;
+                }
+            }
+        }
+    
+    return found? minDist : 0 ;
+}
+
 // ----------------------------------------------------------------------------
 // SPAWN TRAINS FOR CURRENT TICK
 // ----------------------------------------------------------------------------
@@ -38,15 +57,15 @@ void spawnTrainsForTick() {
             int r = TrainStartRow[i];
             int c = TrainStartCol[i];
            
-        bool occupied = false;
+        bool blocked = false;
            
                 for (int j = 0; j < TotalScheduledTrains; j++) {
                 if (TrainState[j] == 1 && TrainCurrentRow[j] == r && TrainCurrentCol[j] == c) // Don't check if self                    
-                occupied = true;
+                blocked = true;
                 break;
                 }
             
-            if (occupied) {
+            if (blocked) {
                 // If it is blocked, wait until next tick
                 TrainSpawnTicks[i]++; 
             } else {
@@ -74,12 +93,9 @@ bool determineNextPosition(int i) {
     int r = TrainCurrentRow[i];
     int c = TrainCurrentCol[i];
     int dir = TrainCurrentDir[i];
-    int dr = 0, dc = 0;
-    if (dir == DIR_UP) dr = -1;
-    else if (dir == DIR_RIGHT) dc = 1;
-    else if (dir == DIR_DOWN) dr = 1;
-    else if (dir == DIR_LEFT) dc = -1;
-
+    int dr , dc ;
+    getDelta(dir , dr , dc);
+    
     int nextR = r + dr;
     int nextC = c + dc;
     int nextDir = dir;
@@ -133,7 +149,7 @@ int getNextDirection(int r, int c, int dir, char tile) {
             // Up(0)->Right(1), Right(1)->Down(2), Down(2)->Left(3), Left(3)->Up(0)
             return dir ;
         }
-        else{
+        
             
             int rightDir = (dir + 1) % 4;
             int dr, dc;
@@ -144,11 +160,11 @@ int getNextDirection(int r, int c, int dir, char tile) {
             }
             int leftDir = (dir + 3) % 4;
             getDelta(leftDir, dr, dc);
-            if(isTrackTile(r + dr, c + dc)) {
+            if(isTrackTile(r + dr, c + dc)) 
             return leftDir;
-        }
-            return dir;
-        }
+        
+            return dir; // fall back
+        
 
     }
     return dir;
@@ -161,19 +177,17 @@ int getNextDirection(int r, int c, int dir, char tile) {
 // ----------------------------------------------------------------------------
 int getSmartDirectionAtCrossing(int r, int c, int currentDir) { 
      int destR = -1, destC = -1;
-    bool found = false; // Flag to break nested loops
+     int minDist = 99999;
+   // Flag to break nested loops
     // Simple search for any 'D'
     for(int i = 0; i < LevelNumRows; i++) {
         for(int j = 0; j < LevelNumCols; j++) {
             if(TheGrid[i][j] == 'D') {
-                destR = i; 
-                destC = j;
-                found = true;
-                break; // Breaks Inner Loop
+                int d = abs(i - r) + abs(j - c);
+                if (d < minDist) { minDist = d; destR=i; destC=j; }
             }
         }
-        if (found) 
-        break;
+       
     }
     if (destR == -1)
      return currentDir;
@@ -182,8 +196,7 @@ int getSmartDirectionAtCrossing(int r, int c, int currentDir) {
     // 0=UP, 1=RIGHT, 2=DOWN, 3=LEFT
     
     int bestDir = currentDir;
-    int minDist = 10000;
-
+   
     // Candidates: Straight, Left Turn, Right Turn
     int candidates[3];
     candidates[0] = currentDir;
@@ -255,19 +268,35 @@ void detectCollisions() {
 
      for (int j = i + 1; j < TotalScheduledTrains; j++) {
        if (TrainState[j] != 1) continue;
+       bool collision = false;
         if (TrainNextRow[i] == TrainNextRow[j] && TrainNextCol[i] == TrainNextCol[j]) {
-            TrainNextRow[j] = TrainCurrentRow[j];
-            TrainNextCol[j] = TrainCurrentCol[j];
+           collision = true;
             }
-    else if (TrainNextRow[i] == TrainCurrentRow[j] && TrainNextCol[i] == TrainCurrentCol[j] &&
-      TrainNextRow[j] == TrainCurrentRow[i] && TrainNextCol[j] == TrainCurrentCol[i]) {
-         TrainNextRow[j] = TrainCurrentRow[j];
-                TrainNextCol[j] = TrainCurrentCol[j];
+            else if (TrainNextRow[i] == TrainCurrentRow[j] && TrainNextCol[i] == TrainCurrentCol[j] &&
+            TrainNextRow[j] == TrainCurrentRow[i] && TrainNextCol[j] == TrainCurrentCol[i]) {
+                collision = true;
+
+                    }
+                    if (collision) {
+                        int distI = calculateDistance(i);
+                        int distJ  = calculateDistance(j);
+
+                        if (distI > distJ) {
+                            TrainNextRow[j] = TrainCurrentRow[j];
+                            TrainNextCol[j] = TrainCurrentCol[j];
+                        } 
+                        else if (distJ > distI) {
+                            TrainNextRow[i] = TrainCurrentRow[i];
+                            TrainNextCol[i] = TrainCurrentCol[i];
+                        } 
+                        else {
+                            TrainNextRow[i] = TrainCurrentRow[i];
+                            TrainNextCol[i] = TrainCurrentCol[i];
+                }
             }
         }
     }
 }
-
 // ----------------------------------------------------------------------------
 // CHECK ARRIVALS
 // ----------------------------------------------------------------------------
