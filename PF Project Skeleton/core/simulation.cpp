@@ -26,11 +26,19 @@ void initializeSimulation() {
 
 void simulateOneTick() {
    spawnTrainsForTick();
+   
    determineAllRoutes();
-   queueSwitchFlips();
+   
    moveAllTrains();
+   
+   updateSwitchCounters();
+   
+   queueSwitchFlips();
+   
    applyDeferredFlips();
+
    checkArrivals();
+   
    updateSignalLights();
    for (int i = 0; i < TotalScheduledTrains; i++) {
         if (TrainState[i] == 1) { // 1 = Active

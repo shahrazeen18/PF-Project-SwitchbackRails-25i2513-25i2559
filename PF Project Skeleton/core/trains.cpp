@@ -195,9 +195,9 @@ int getSmartDirectionAtCrossing(int r, int c, int currentDir) {
         int dr, dc;
         getDelta(d, dr, dc);
 
-    if(!isTrackTile(r +dr, c + dc)){
+    if(!isTrackTile(r +dr, c + dc))
         continue;
-    }
+    
 
 
         // Manhattan Distance calculation
@@ -239,7 +239,6 @@ for (int i = 0; i < TotalScheduledTrains; i++) {
             TrainCurrentCol[i] = TrainNextCol[i];
             TrainCurrentDir[i] = TrainNextDir[i];
          if (isSwitchTile(TrainCurrentRow[i], TrainCurrentCol[i])) {
-                updateSwitchCounters();
             }
         }
     }

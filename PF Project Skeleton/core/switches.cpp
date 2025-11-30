@@ -13,31 +13,31 @@
 // Increment counters for trains entering switches.
 // ----------------------------------------------------------------------------
 void updateSwitchCounters() {
-    for (int  i = 0; i < TotalScheduledTrains ; i++)
-    {
-        if( TrainState[i] == 1) {
-            int r = TrainCurrentRow[i];
-            int c = TrainCurrentCol[i];
-        
-            if(isSwitchTile(r , c)){
-                int swIdx = getSwitchIndex( r , c); // gives train direction
-
-                int currentDir = TrainCurrentDir[i];
-                int entryDir = ( currentDir + 2 ) % 4; // thia gives the switch for opposite 
-
-                if(SwitchLogicMode[swIdx] == MODE_GLOBAL)
-                    {SwitchCounters[swIdx][0]++;}
-
-
-                else{
-                    SwitchCounters [ swIdx ][entryDir]++;
-                }
-            }
-        }
-    }
     
-}
+    for(int i = 0; i < TotalScheduledTrains; i++) {
+    if (TrainState[i] == 1) { 
+        int r = TrainCurrentRow[i];
+        int c = TrainCurrentCol[i];
 
+        if (isSwitchTile(r, c)) {
+            int swIdx = getSwitchIndex(r, c);
+            
+            // Logic: Entry direction is opposite of current facing
+            int currentDir = TrainCurrentDir[i];
+            int entryDir = (currentDir + 2) % 4; 
+
+            if (SwitchLogicMode[swIdx] == MODE_GLOBAL) {
+                SwitchCounters[swIdx][0]++;
+            } else {
+                SwitchCounters[swIdx][entryDir]++;
+              }
+         
+            }
+    
+        }
+
+    }
+}
 
 // ----------------------------------------------------------------------------
 // QUEUE SWITCH FLIPS

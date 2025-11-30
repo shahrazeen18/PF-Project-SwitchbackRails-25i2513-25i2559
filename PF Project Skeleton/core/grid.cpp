@@ -47,6 +47,9 @@ bool isTrackTile( int r, int c ) {
 bool isSwitchTile( int r , int c) {
     if (!isInBounds(r, c)) return false;
     char tile = TheGrid[r][c];
+    if (tile == 'S' || tile == 'D') {
+    return false; 
+}
     return (tile >= 'A' && tile <= 'Z');
 }
 
