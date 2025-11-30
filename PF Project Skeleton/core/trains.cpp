@@ -17,6 +17,8 @@
 // ----------------------------------------------------------------------------
 // Activate trains scheduled for this tick.
 // ----------------------------------------------------------------------------
+
+
 void spawnTrainsForTick() {
     for (int i = 0; i < TotalScheduledTrains ; i++) // check if train is scheduled for now.
 
@@ -131,8 +133,19 @@ int getNextDirection(int r, int c, int dir, char tile) {
             if (isTrackTile(r + dr, c + dc)) {
                 return rightDir;
             }
+            int leftDir = (dir + 3) % 4;
+            dr = 0; dc = 0;
+            if (leftDir == DIR_UP) dr = -1; 
+            else if (leftDir == DIR_RIGHT) dc = 1;
+            else if (leftDir == DIR_DOWN) dr = 1;
+            else if (leftDir == DIR_LEFT) dc = -1;
+            
+            if (isTrackTile(r + dr, c + dc)) {
+                return leftDir;
+            }
             return dir;
         }
+
     }
     return dir;
 }
