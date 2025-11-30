@@ -13,7 +13,6 @@
 // ----------------------------------------------------------------------------
 // INITIALIZE SIMULATION
 // ----------------------------------------------------------------------------
-
 void initializeSimulation() {
     initializeLogFiles();
     CurrentTick = 0;
@@ -23,33 +22,26 @@ void initializeSimulation() {
 // ----------------------------------------------------------------------------
 // SIMULATE ONE TICK
 // ----------------------------------------------------------------------------
-
 void simulateOneTick() {
    spawnTrainsForTick();
-   
    determineAllRoutes();
-   
    moveAllTrains();
    
    updateSwitchCounters();
-   
    queueSwitchFlips();
-   
    applyDeferredFlips();
-
-   checkArrivals();
    
+   checkArrivals();
    updateSignalLights();
+   
    for (int i = 0; i < TotalScheduledTrains; i++) {
-        if (TrainState[i] == 1) { // 1 = Active
+        if (TrainState[i] == 1) { 
             const char* stateStr = "RUNNING";
             logTrainTrace(CurrentTick, i, 
                           TrainCurrentCol[i], 
                           TrainCurrentRow[i], 
                           TrainCurrentDir[i], 
                           stateStr);
-        }
-        else if (TrainState[i] == 2) {
         }
     }
     CurrentTick++;
@@ -58,7 +50,6 @@ void simulateOneTick() {
 // ----------------------------------------------------------------------------
 // CHECK IF SIMULATION IS COMPLETE
 // ----------------------------------------------------------------------------
-
 bool isSimulationComplete() {
     for(int i=0; i< TotalScheduledTrains; i++) {
         if(TrainState[i] == 0 || TrainState[i] == 1) {
