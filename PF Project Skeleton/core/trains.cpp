@@ -63,10 +63,10 @@ bool determineNextPosition(int i) {
     int c = TrainCurrentCol[i];
     int dir = TrainCurrentDir[i];
     int dr = 0, dc = 0;
-    if (dir == 0) dr = -1;
-    else if (dir == 1) dc = 1;
-    else if (dir == 2) dr = 1;
-    else if (dir == 3) dc = -1;
+    if (dir == DIR_UP) dr = -1;
+    else if (dir == DIR_RIGHT) dc = 1;
+    else if (dir == DIR_DOWN) dr = 1;
+    else if (dir == DIR_LEFT) dc = -1;
 
     int nextR = r + dr;
     int nextC = c + dc;
@@ -78,7 +78,7 @@ bool determineNextPosition(int i) {
             nextDir = getSmartDirectionAtCrossing(nextR, nextC, dir);
         } else {
             // Handles Curves and Switches
-            nextDir = getNextDirection(dir, tile);
+            nextDir = getNextDirection(nextR,nextC, dir, tile);
         }
     }
       // Stores planned move
@@ -94,20 +94,20 @@ bool determineNextPosition(int i) {
 // ----------------------------------------------------------------------------
 // Return new direction after entering the tile.
 // ----------------------------------------------------------------------------
-int getNextDirection(int dir, char tile) { 
+int getNextDirection(int r, int c, int dir, char tile) { 
      // Curve 
     if (tile == '/') {
-        if (dir == 1) return 0; // Right -> Up
-        if (dir == 2) return 3; // Down -> Left
-        if (dir == 3) return 2; // Left -> Down
-        if (dir == 0) return 1; // Up -> Right
+        if (dir == DIR_RIGHT) return DIR_UP; // Right -> Up
+        if (dir == DIR_DOWN) return DIR_LEFT; // Down -> Left
+        if (dir == DIR_LEFT) return DIR_DOWN; // Left -> Down
+        if (dir == DIR_UP) return DIR_RIGHT;// Up -> Right
     }
     // Curve \ (backslash)
     else if (tile == '\\') {
-        if (dir == 1) return 2; // Right -> Down
-        if (dir == 0) return 3; // Up -> Left
-        if (dir == 3) return 0; // Left -> Up
-        if (dir == 2) return 1; // Down -> Right
+        if (dir == DIR_RIGHT) return DIR_DOWN; // Right -> Down
+        if (dir == DIR_UP) return DIR_LEFT; // Up -> Left
+        if (dir == DIR_LEFT) return DIR_UP; // Left -> Up
+        if (dir == DIR_DOWN) return DIR_RIGHT; // Down -> Right
     }
     // Switches (A-Z)
     else if (tile >= 'A' && tile <= 'Z') {
@@ -116,10 +116,22 @@ int getNextDirection(int dir, char tile) {
         
         // If State is 1 (Turn), we mimic a right-hand turn relative to entry
         // This is a simplification. Real logic depends on track layout.
-        if (state == 1) {
+        if (state == 0) {
             // Simple logic: Turn Right relative to movement
             // Up(0)->Right(1), Right(1)->Down(2), Down(2)->Left(3), Left(3)->Up(0)
-            return (dir + 1) % 4;
+            return dir ;
+        }
+        else{
+            int rightDir = (dir + 1) % 4;
+            int dr = 0, dc = 0;
+            if (rightDir == DIR_UP) dr = -1; 
+            else if (rightDir == DIR_RIGHT) dc = 1;
+            else if (rightDir == DIR_DOWN) dr = 1;
+            else if (rightDir == DIR_LEFT) dc = -1;
+            if (isTrackTile(r + dr, c + dc)) {
+                return rightDir;
+            }
+            return dir;
         }
     }
     return dir;
@@ -133,7 +145,7 @@ int getNextDirection(int dir, char tile) {
 int getSmartDirectionAtCrossing(int r, int c, int currentDir) { 
      int destR = -1, destC = -1;
     bool found = false; // Flag to break nested loops
-    // Simple linear search for any 'D'
+    // Simple search for any 'D'
     for(int i = 0; i < LevelNumRows; i++) {
         for(int j = 0; j < LevelNumCols; j++) {
             if(TheGrid[i][j] == 'D') {
@@ -164,7 +176,10 @@ int getSmartDirectionAtCrossing(int r, int c, int currentDir) {
     for(int k=0; k<3; k++) {
         int d = candidates[k];
         int dr = 0, dc = 0;
-        if (d==0) dr=-1; else if (d==1) dc=1; else if (d==2) dr=1; else if (d==3) dc=-1;
+        if (d==DIR_UP) dr=-1;
+        else if (d==DIR_RIGHT) dc=1; 
+        else if (d==DIR_DOWN) dr=1; 
+        else if (d==DIR_LEFT) dc=-1;
         
         // Manhattan Distance calculation
         int dist = abs(destR - (r + dr)) + abs(destC - (c + dc));
@@ -252,7 +267,8 @@ void checkArrivals() {
                 TrainIsActive[i] = false;
             }
             // Checks Crash 
-            else if (!isInBounds(r, c)) {
+            else if (!isInBounds(r, c) || !isTrackTile(r , c) ) 
+            {
                 TrainState[i] = 3; // Crashed
                 TrainIsActive[i] = false;
             }
